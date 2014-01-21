@@ -1,0 +1,13 @@
+# Miscellaneous OS and editor meta files
+*~
+.metadata.*
+.metadata
+.metadata*
+.project
+.DS_Store
+.idea
+.idra*
+
+# Configs and dependencies
+node_modules/
+bower_components/

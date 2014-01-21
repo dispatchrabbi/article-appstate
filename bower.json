@@ -1,0 +1,20 @@
+{
+  "name": "article-appstate",
+  "version": "0.0.0",
+  "homepage": "https://github.com/dispatchrabbi/article-appstate",
+  "authors": [
+    "Eli Morris-Heft <eli.morris.heft@gmail.com>"
+  ],
+  "description": "An article about the benefits of using an application state object.",
+  "license": "CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/)",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "can": "git://github.com/bitovi/canjs.git#v2.0.3",
+    "steal": "git://github.com/bitovi/steal.git#c735373a007652d1e12d6e49e183834e4b29a910"
+  }
+}
