@@ -3,8 +3,9 @@ steal(
 'models/app-state',
 'controls/search-filter',
 'controls/flag-filter',
+'controls/undo-button',
 'controls/report-list',
-function(can, AppState, SearchFilter, FlagFilter, ReportList) {
+function(can, AppState, SearchFilter, FlagFilter, UndoButton, ReportList) {
 
 	// for convenience's sake
 	var reports = [
@@ -32,5 +33,7 @@ function(can, AppState, SearchFilter, FlagFilter, ReportList) {
 
 	new SearchFilter('#search-filter');
 	new FlagFilter('#flag-filter');
+	new UndoButton('#undo-button');
+
 	new ReportList('#report-list', {reports: reports});
 });
