@@ -150,7 +150,7 @@ First, we create [the control for the undo button](./4-final/controls/undo-butto
 }
 ```
 
-Now all we have left to do is instantiate the control in [our main JS file](./4-final/index.js) and we have infinite undo in 12 lines of code! Eat your heart out, St. Louis.
+Now all we have left to do is instantiate the control in [our main JS file](./4-final/index.js) and we have infinite undo in 12 lines of code! [Eat your heart out, St. Louis.](./4-final/index.html)
 
 This pattern lets you hook together all the components of your web application in a simple and maintainable way and it guarantees a single place to keep important shared information. We’ve seen how that guarantee makes it dead simple to implement simple save and restore functionality on top of. And it’s easy to extend the concept and apply it to groups of controls everywhere (as long as you’re keeping your application state lean). For these reasons, the application state (or [observer pattern](http://sourcemaking.com/design_patterns/observer)) is a tool you’ll want to keep handy in your architecture toolbox.
 
