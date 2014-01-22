@@ -27,10 +27,8 @@ function(can, AppState, SearchFilter, FlagFilter, ReportList) {
 	];
 
 	// prep the state from the route
-	can.route.ready();
 	var appState = window.appState = new AppState();
-	appState.attr('searchTerm', can.route.attr('searchTerm') || '');
-	appState.attr('flags', can.route.attr('flags') ? can.route.attr('flags').split('') : []);
+	can.route.ready();
 
 	new SearchFilter('#search-filter');
 	new FlagFilter('#flag-filter');

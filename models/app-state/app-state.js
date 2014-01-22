@@ -25,6 +25,11 @@ function(can) {
 		}
 	});
 
+	can.route.bind('change', function() {
+		appState.attr('searchTerm', can.route.attr('searchTerm') || '');
+		appState.attr('flags', can.route.attr('flags') ? can.route.attr('flags').split('') : []);
+	});
+
 	return function() {
 		return appState;
 	};
