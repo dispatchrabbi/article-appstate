@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>TPS Report Viewer</title>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="styles.css">
+<body>
+	<aside id="filters">
+		<section id="search-filter">
+			<input type="search" id="search" placeholder="Report Name">
+		</section>
+		<section id="flag-filter">
+			<div class="flag"><input type="checkbox"><span class="name">A</span></div>
+			<div class="flag"><input type="checkbox"><span class="name">B</span></div>
+			<div class="flag"><input type="checkbox"><span class="name">C</span></div>
+		</section>
+	</aside>
+	<section id="report-list">
+		<ul>
+			<li class="report">
+				<div class="name">Important TPS Report 1</div>
+				<div class="flags">BC</div>
+			</li>
+			<li class="report">
+				<div class="name">Important TPS Report 2</div>
+				<div class="flags">ABC</div>
+			</li>
+			<li class="report">
+				<div class="name">Unimportant TPS Report 3</div>
+				<div class="flags">A</div>
+			</li>
+			<li class="report">
+				<div class="name">Important TPS Report 4</div>
+				<div class="flags">AC</div>
+			</li>
+		</ul>
+	</section>
+</html>
