@@ -27,8 +27,6 @@ function(can, AppState, SearchFilter, FlagFilter, UndoButton, ReportList) {
 		}
 	];
 
-	// prep the state from the route
-	var appState = window.appState = new AppState();
 	can.route.ready();
 
 	new SearchFilter('#search-filter');

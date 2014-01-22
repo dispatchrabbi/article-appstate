@@ -7,7 +7,7 @@ function(_, can, template, AppState) {
 
 	return can.Control.extend({
 		defaults: {
-			appState: new AppState(),
+			appState: AppState,
 			reports: []
 		}
 	}, {

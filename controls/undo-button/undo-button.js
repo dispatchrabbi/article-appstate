@@ -6,7 +6,7 @@ function(can, template, AppState) {
 
 	return can.Control.extend({
 		defaults: {
-			appState: new AppState(),
+			appState: AppState,
 			states: [] // the last element in this is always the current state
 		}
 	}, {

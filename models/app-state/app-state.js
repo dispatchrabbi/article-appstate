@@ -30,8 +30,6 @@ function(can) {
 		appState.attr('flags', can.route.attr('flags') ? can.route.attr('flags').split('') : []);
 	});
 
-	return function() {
-		return appState;
-	};
+	return appState;
 
 });
