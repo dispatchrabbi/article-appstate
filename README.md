@@ -52,6 +52,9 @@ return can.Control.extend({
 		}));
 	},
 
+	// A more responsive way to do this would be to listen to keyup
+	// and throttle the method that changes the application state
+	// but for this example we'll keep it simple.
 	'#search change': function(el, ev) {
 		this.options.appState.attr('searchTerm', el.val());
 	}
@@ -81,6 +84,7 @@ return can.Control.extend({
 		}));
 	},
 
+	// filter reports when the application state changes
 	'{appState} change': function() {
 		this.viewModel.reports.replace(this.filterReports(this.options.reports));
 	},
@@ -90,6 +94,7 @@ return can.Control.extend({
 			appFlags = appState.attr('flags').attr();
 
 		return _.filter(reportsList, function(report) {
+			// we want reports whose name contains the search string and that have all of the checked flags
 			return (
 				(report.name.toLowerCase().indexOf(appState.searchTerm.toLowerCase()) >= 0) &&
 				(appFlags.length === 0 || _.intersection(appFlags, report.flags).length === appFlags.length)
@@ -99,29 +104,53 @@ return can.Control.extend({
 });
 ```
 
-Okay, with the idea and implementation of application state under our belts, let’s see how to unleash the application state’s superpower: saving and restoring state. You could use some sort of API call to save and restore states, but we’re going to use an easier way to make this functionality available to users: put the state right in the URL.
+Okay, with the idea and implementation of application state under our belts, let’s see how to unleash the application state’s superpower: making state easily available to the user so they can return to a specific state. You might implement save and restore functionality by any number of mechanisms — more on that later — but we’re going to take the easy way out and put the state right in the URL.
 
-CanJS has a routing system called can.route. It lets you manipulate the URL fragment using a special can.Map. Because both can.route and the application state are Maps, we can hook them up in such a way that they reflect each other. Let’s give it a try.
+CanJS has a routing system called [can.route](http://canjs.com/docs/can.route.html). It lets you manipulate the URL fragment using a special can.Map. Because both can.route and the application state are Maps, we can hook them up in such a way that they reflect each other. [Let’s give it a try.](./3-with-routing/models/app-state/app-state.js)
 
-Here’s how you make the application state listen to the route:
-(can.route code here)
+```js
+// Change the route when the app state changes.
+appState.bind('change', function(ev) {
+	var currentState = appState.attr();
+	can.route.attr({
+		searchTerm: currentState.searchTerm,
+		flags: currentState.flags.join('')
+	}, true);
+});
 
-And here’s how you make the route listen to application state changes:
-(code for that modification here)
+// Change the app state when the route changes.
+can.route.bind('change', function() {
+	appState.attr('searchTerm', can.route.attr('searchTerm') || '');
+	appState.attr('flags', can.route.attr('flags') ? can.route.attr('flags').split('') : []);
+});
+```
 
 Now, when you modify the application state, the URL will change, and vice versa. That means that you can change the filter settings and bookmark the URL, and when you come back, the application will load into the same state you left it in.
 
-This is very cool, but it’s time to take it to the next level. Let’s add a feature that makes web developers everywhere tremble: an undo button. I bet you we can do it in 20 lines of code (not counting boilerplate). Let’s rock.
+This is very cool, but it’s time to take it to the next level. Let’s add a feature that makes web developers everywhere tremble: an *undo* button. I bet you we can do it in 15 lines of code (not counting boilerplate). Let’s rock.
 
-First, we create [the control for the undo button] (and [its associated template]). Here’s the part that saves and restores each state:
+First, we create [the control for the undo button](./4-final/controls/undo-button/undo-button.js) (and [its associated template](./4-final/controls/undo-button/undo-button.mustache)). Here’s the part that saves and restores each state:
 
-(code for that part)
+```js
+// save the state when it changes
+'{appState} change': function() {
+	if(! _.isEqual(this.options.states[this.options.states.length - 1], this.options.appState.attr())) {
+		this.options.states.push(this.options.appState.attr());
+	}
+},
+// restore the state when the button is pressed
+'button click': function() {
+	this.options.states.pop(); // get rid of the state we're undoing
 
-Now all we have left to do is instantiate the control in [our main JS file]:
+	if(this.options.states.length) {
+		// This is the coolest bit! All we have to do is replace the application state,
+		// and every other control takes care of itself, no matter how complex your state or application is.
+		this.options.appState.attr(this.options.states[this.options.states.length - 1], true);
+	}
+}
+```
 
-(code to instantiate the undo button)
+Now all we have left to do is instantiate the control in [our main JS file](./4-final/index.js) and we have infinite undo in 12 lines of code! Eat your heart out, St. Louis.
 
-Whew! Infinite undo in 17 lines of code! Eat your heart out, St. Louis.
-
-This pattern lets you hook together all the components of your web application in a simple and maintainable way and it guarantees a single place to keep important shared information. We’ve seen how that guarantee makes it dead simple to implement simple save and restore functionality on top of. And it’s easy to extend the concept and apply it to groups of controls everywhere (as long as you’re keeping your application state lean). For these reasons, the application state (or [observer pattern]) is a tool you’ll want to keep handy in your architecture toolbox.
+This pattern lets you hook together all the components of your web application in a simple and maintainable way and it guarantees a single place to keep important shared information. We’ve seen how that guarantee makes it dead simple to implement simple save and restore functionality on top of. And it’s easy to extend the concept and apply it to groups of controls everywhere (as long as you’re keeping your application state lean). For these reasons, the application state (or [observer pattern](http://sourcemaking.com/design_patterns/observer)) is a tool you’ll want to keep handy in your architecture toolbox.
 
