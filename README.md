@@ -11,28 +11,93 @@ Application state is the collection of all of the properties that define, well, 
 
 > It’s worth taking an aside to note that an unchecked application state object can easily turn into a miscellaneous bucket, being used to store things simply because more than one control wants access to them. It’s tempting to put shared models or random pieces of data you might want to hang on to for later onto the application state because it’s such a convenient place to put them. Reject the temptation! This is how your elegant application state turns into the dreaded god object, your controls will then be even more intractable than before.
 
-With our restraint summoned, let’s go to [the example](./index.html).
+With our restraint summoned, let’s go to [the example](./1-first-pass/index.html).
 
 This application collects TPS reports from… well, we don’t actually care where they come from, but someone writes them, and here they are. TPS reports need to be searchable by name and filterable by the very helpful flags *A*, *B*, and *C*, and we have a search box and three helpful checkboxes that make that happen.
 
-If you want to dig deeper, check out the [report list](./controls/report-list/report-list.js), the [search box](./controls/search-filter/search-filter.js), and the [flag filter](./controls/flag-filter/flag-filter.js).
+> If you want to dig deeper, you can look at all the code for this example in [the github repository](https://github.com/dispatchrabbi/article-appstate).
 
-We need to create an object that facilitates communication between these three components, and the first step is to figure out what information needs to be shared. In this case, it’s pretty simple: the report list needs to know what criteria to filter by, and that information is supplied by the search box and the flag filters. In your application, you may find that what information needs to be shared will change over the course of the project. Remember, always try to keep your application state tracking as few properties as it can.
+We need to create an object that facilitates communication between these three components, and the first step is to figure out what information needs to be shared. In this case, it’s pretty simple: the report list needs to know what criteria to filter by, and that information is supplied by the search box and the flag filters. In your application, you may find that what information needs to be shared will change over the course of the project. Remember, always try to keep your application state tracking the minimum amount of information it needs to.
 
-Another important aspect of this application state is that there’s only one for the whole application. Because of this, we’re going to make the application state a singleton. If you need to save the application state for some reason, it’s easy enough to add a clone method.
+Another important aspect of the application state is that it should always look the same to the whole application. Because of this, we’re going to make the application state a singleton. If you need to save the application state for some reason, it’s easy enough to serialize it.
 
-(code for the application state module here, with source link following)
+Here's [our application state object](./2-with-app-state/models/app-state/app-state.js):
+
+```js
+steal('can', function(can) {
+
+var appState = new can.Map({
+	searchTerm: '',
+	flags: []
+});
+
+return appState;
+
+});
+```
 
 When we go to modify the controls to listen to the application state, a hidden benefit of making it a singleton emerges: we don’t have to worry about passing it into every control. We can instantiate it and know that it is the same state that every other control is working with.
 
-We’ll hook up the search control to modify the application state on change:
-(code for that modification here)
+We’ll hook up [the search control](./2-with-app-state/controls/search-filter/search-filter.js) to modify the application state on change:
 
-The flag filters can be [similarly modified].
+```js
+return can.Control.extend({
+	defaults: {
+		appState: AppState
+	}
+}, {
+	init: function() {
+		this.element.html(template({
+			appState: this.options.appState
+		}));
+	},
 
-And we’ll make the report list listen to changes in the application state:
+	'#search change': function(el, ev) {
+		this.options.appState.attr('searchTerm', el.val());
+	}
+});
+```
 
-(code for that modification here)
+The [flag filters](./2-with-app-state/controls/flag-filter/flag-filter.js) can be similarly modified.
+
+And we’ll make the [report list](./2-with-app-state/controls/report-list/report-list.js) listen to changes in the application state:
+
+```js
+return can.Control.extend({
+	defaults: {
+		appState: AppState,
+		reports: []
+	}
+}, {
+	init: function() {
+		this.viewModel = new can.Map({
+			reports: this.filterReports(this.options.reports)
+		});
+
+		this.element.html(template(this.viewModel, {
+			formatFlags: function() {
+				return this.flags.join('');
+			}
+		}));
+	},
+
+	'{appState} change': function() {
+		this.viewModel.reports.replace(this.filterReports(this.options.reports));
+	},
+
+	filterReports: function(reportsList) {
+		var appState = this.options.appState,
+			appFlags = appState.attr('flags').attr();
+
+		return _.filter(reportsList, function(report) {
+			return (
+				(report.name.toLowerCase().indexOf(appState.searchTerm.toLowerCase()) >= 0) &&
+				(appFlags.length === 0 || _.intersection(appFlags, report.flags).length === appFlags.length)
+			);
+		});
+	}
+});
+```
 
 Okay, with the idea and implementation of application state under our belts, let’s see how to unleash the application state’s superpower: saving and restoring state. You could use some sort of API call to save and restore states, but we’re going to use an easier way to make this functionality available to users: put the state right in the URL.
 
