@@ -1,25 +1,34 @@
 Using Application State
 ===
 
-So you have the perfect design. You’ve broken it down into beautiful, modular components, each contained in its own element, blissfully unaware of any other part of the page. Now comes the dreaded job of making them talk to each other.
+One of the biggest challenges in a complex application is getting all the different parts of the app to talk to each other simply, cleanly, and reliably. The application state pattern is an architectural pattern that enables exactly this while keeping coupling to a minimum. In this article, I’ll go over what application state entails and why you’d want to use it, demonstrate adding application state to a simple application, and show off some cool tricks you can add to your app that you get for free when you follow this pattern.
 
-There are pitfalls everywhere in this task. Hook every component to every other component it talks to and you lose the modularity you so painstakingly constructed. Pass all the data to every object and you end up with a thousand parameters - or worse, a [god object](http://sourcemaking.com/antipatterns/the-blob). Approach each control differently, and your code ends up strewn over the entire project, unfollowable.
+Why use application state?
+---
+Imagine you’re building [this simple TPS report viewer](./1-first-pass/index.html):
+!(./images/app.png)
 
-What you need is **application state**.
+It displays TPS reports from… well, we don’t actually care where they’re from, but someone writes them, and here they are. TPS reports need to be searchable by name and filterable by the flags *A*, *B*, and *C*, so I’ve divided the application into a search bar component, a flag filter component, and a report list.
+!(./images/app-components.png)
 
+In order for the report list to filter based on the search bar and the flag checkboxes, it has to know when they change. A first attempt at this might be to have the search bar and flag checkboxes update the report list whenever they change values:
+!(./images/app-components-arrows.png)
+
+This would work okay for something this simple, but as soon as you add another component — say, an undo button — you have to add communication to every other component:
+!(./images/app-undo-components.png)
+
+For every component you add to your application, you have to add communication to every component you already have, and it can get ugly fast. (This is known as the [handshake problem](http://en.wikipedia.org/wiki/Handshake_problem).) There’s got to be a better way — and there is: **application state**.
+
+What is application state?
+---
 Application state is the collection of all of the properties that define, well, what state your application is in. It’s the smallest amount of adhesive you need to put your disparate controls together (and some controls might not even need to know about it). Ideally, your application should be able to recreate any past configuration with only a copy of the application state from that time — and this is the secret superpower of the application state.
 
-> It’s worth taking an aside to note that an unchecked application state object can easily turn into a miscellaneous bucket, being used to store things simply because more than one control wants access to them. It’s tempting to put shared models or random pieces of data you might want to hang on to for later onto the application state because it’s such a convenient place to put them. Reject the temptation! This is how your elegant application state turns into the dreaded god object, your controls will then be even more intractable than before.
+Let’s look at how we can apply this idea to the application above.
 
-With our restraint summoned, let’s go to [the example](./1-first-pass/index.html).
-
-This application collects TPS reports from… well, we don’t actually care where they come from, but someone writes them, and here they are. TPS reports need to be searchable by name and filterable by the very helpful flags *A*, *B*, and *C*, and we have a search box and three helpful checkboxes that make that happen.
-
-> If you want to dig deeper, you can look at all the code for this example in [the github repository](https://github.com/dispatchrabbi/article-appstate).
-
-We need to create an object that facilitates communication between these three components, and the first step is to figure out what information needs to be shared. In this case, it’s pretty simple: the report list needs to know what criteria to filter by, and that information is supplied by the search box and the flag filters. In your application, you may find that what information needs to be shared will change over the course of the project. Remember, always try to keep your application state tracking the minimum amount of information it needs to.
-
-Another important aspect of the application state is that it should always look the same to the whole application. Because of this, we’re going to make the application state a singleton. If you need to save the application state for some reason, it’s easy enough to serialize it.
+Adding application state to your app
+---
+We need to create an object that facilitates communication between these three components, and the first step is to figure out what information needs to be shared. In this case, it’s pretty simple: the report list needs to know what criteria to filter by, and that information is supplied by the search box and the flag filters.
+!(./images/app-state-arrows.png)
 
 Here's [our application state object](./2-with-app-state/models/app-state/app-state.js):
 
@@ -36,7 +45,9 @@ return appState;
 });
 ```
 
-When we go to modify the controls to listen to the application state, a hidden benefit of making it a singleton emerges: we don’t have to worry about passing it into every control. We can instantiate it and know that it is the same state that every other control is working with.
+You’ll note that the application state is a singleton. This is because the application state should always look the same to the whole application. If you need to clone the application state for some reason (for example, to save it for later), it’s easy enough to serialize it.
+
+When we go to modify the controls to listen to the application state, a hidden benefit of making it a singleton emerges: we don’t have to worry about passing the state into every control. Instead, we can just require the module and know that it is the same state that every other control is working with.
 
 We’ll hook up [the search control](./2-with-app-state/controls/search-filter/search-filter.js) to modify the application state on change:
 
@@ -61,9 +72,7 @@ return can.Control.extend({
 });
 ```
 
-The [flag filters](./2-with-app-state/controls/flag-filter/flag-filter.js) can be similarly modified.
-
-And we’ll make the [report list](./2-with-app-state/controls/report-list/report-list.js) listen to changes in the application state:
+The [flag filters](./2-with-app-state/controls/flag-filter/flag-filter.js) can be similarly modified. After that, we’ll make the [report list](./2-with-app-state/controls/report-list/report-list.js) listen to changes in the application state:
 
 ```js
 return can.Control.extend({
@@ -104,6 +113,8 @@ return can.Control.extend({
 });
 ```
 
+Making state available
+---
 Okay, with the idea and implementation of application state under our belts, let’s see how to unleash the application state’s superpower: making state easily available to the user so they can return to a specific state. You might implement save and restore functionality by any number of mechanisms — more on that later — but we’re going to take the easy way out and put the state right in the URL.
 
 CanJS has a routing system called [can.route](http://canjs.com/docs/can.route.html). It lets you manipulate the URL fragment using a special can.Map. Because both can.route and the application state are Maps, we can hook them up in such a way that they reflect each other. [Let’s give it a try.](./3-with-routing/models/app-state/app-state.js)
@@ -127,6 +138,7 @@ can.route.bind('change', function() {
 
 Now, when you modify the application state, the URL will change, and vice versa. That means that you can change the filter settings and bookmark the URL, and when you come back, the application will load into the same state you left it in.
 
+Doing something new
 This is very cool, but it’s time to take it to the next level. Let’s add a feature that makes web developers everywhere tremble: an *undo* button. I bet you we can do it in 15 lines of code (not counting boilerplate). Let’s rock.
 
 First, we create [the control for the undo button](./4-final/controls/undo-button/undo-button.js) (and [its associated template](./4-final/controls/undo-button/undo-button.mustache)). Here’s the part that saves and restores each state:
@@ -152,5 +164,18 @@ First, we create [the control for the undo button](./4-final/controls/undo-butto
 
 Now all we have left to do is instantiate the control in [our main JS file](./4-final/index.js) and we have infinite undo in 12 lines of code! [Eat your heart out, St. Louis.](./4-final/index.html)
 
-This pattern lets you hook together all the components of your web application in a simple and maintainable way and it guarantees a single place to keep important shared information. We’ve seen how that guarantee makes it dead simple to implement simple save and restore functionality on top of. And it’s easy to extend the concept and apply it to groups of controls everywhere (as long as you’re keeping your application state lean). For these reasons, the application state (or [observer pattern](http://sourcemaking.com/design_patterns/observer)) is a tool you’ll want to keep handy in your architecture toolbox.
+A note of caution
+---
+Here’s the final architecture for the TPS report viewer:
+!(./images/app-state-undo-arrows.png)
 
+Because the application state connects most of the components in an application, it can be tempting to turn it into a miscellaneous bucket and using it to store things simply because more than one control wants access to them. The most common culprits here are shared data models or random pieces of data you want to store for later.
+
+Fight this temptation! This is how your elegant application state turns into [the blob](http://sourcemaking.com/antipatterns/the-blob), and how your architecture becomes just as intractable and tightly-coupled as if you weren’t using application state at all. Instead, keep your application state lean by only storing the minimum amount of information you need to recreate the state of the application.
+
+Putting it together
+---
+This pattern lets you hook together all the components of your web application in a simple and maintainable way and it guarantees a single place to keep important shared information. We’ve seen how save-and-restore functionality essentially falls right out of that guarantee. And it’s easy to extend the concept and apply it to groups of controls everywhere (as long as you’re keeping your application state lean). For these reasons, the application state is a tool you’ll want to keep handy in your architecture toolbox.
+
+Looking for more?
+You can find all the code for the examples used in this article in [the github repository](https://github.com/dispatchrabbi/article-appstate), and then check out [the observer pattern](http://sourcemaking.com/design_patterns/observe), which is the pattern the application state architecture follows. Also, Justin Meyer has [a couple](http://www.youtube.com/watch?v=NZi5Ru4KVug) [of videos](http://www.youtube.com/watch?v=yFxDY5SQQp4) on the topic that come at the same architecture from a different angle. If you want to solidify what you learned in this article, check them out.
