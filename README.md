@@ -1,4 +1,4 @@
-Using Application State
+A better architecture for JavaScript apps
 ===
 
 One of the biggest challenges in a complex application is getting all the different parts of the app to talk to each other simply, cleanly, and reliably. The application state pattern is an architectural pattern that enables exactly this while keeping coupling to a minimum. In this article, I’ll go over what application state entails and why you’d want to use it, demonstrate adding application state to a simple application, and show off some cool tricks you can add to your app that you get for free when you follow this pattern.
@@ -6,16 +6,16 @@ One of the biggest challenges in a complex application is getting all the differ
 Why use application state?
 ---
 Imagine you’re building [this simple TPS report viewer](http://dispatchrabbi.github.io/article-appstate/1-first-pass/index.html):
-!(http://dispatchrabbi.github.io/article-appstate/images/app.png)
+<img src="http://dispatchrabbi.github.io/article-appstate/images/app.png">
 
 It displays TPS reports from… well, we don’t actually care where they’re from, but someone writes them, and here they are. TPS reports need to be searchable by name and filterable by the flags *A*, *B*, and *C*, so I’ve divided the application into a search bar component, a flag filter component, and a report list.
-!(http://dispatchrabbi.github.io/article-appstate/images/app-components.png)
+<img src="http://dispatchrabbi.github.io/article-appstate/images/app-components.png">
 
 In order for the report list to filter based on the search bar and the flag checkboxes, it has to know when they change. A first attempt at this might be to have the search bar and flag checkboxes update the report list whenever they change values:
-!(http://dispatchrabbi.github.io/article-appstate/images/app-components-arrows.png)
+<img src="http://dispatchrabbi.github.io/article-appstate/images/app-components-arrows.png">
 
 This would work okay for something this simple, but as soon as you add another component — say, an undo button — you have to add communication to every other component:
-!(http://dispatchrabbi.github.io/article-appstate/images/app-undo-components.png)
+<img src="http://dispatchrabbi.github.io/article-appstate/images/app-undo-components.png">
 
 For every component you add to your application, you have to add communication to every component you already have, and it can get ugly fast. (This is known as the [handshake problem](http://en.wikipedia.org/wiki/Handshake_problem).) There’s got to be a better way — and there is: **application state**.
 
@@ -28,7 +28,7 @@ Let’s look at how we can apply this idea to the application above.
 Adding application state to your app
 ---
 We need to create an object that facilitates communication between these three components, and the first step is to figure out what information needs to be shared. In this case, it’s pretty simple: the report list needs to know what criteria to filter by, and that information is supplied by the search box and the flag filters.
-!(http://dispatchrabbi.github.io/article-appstate/images/app-state-arrows.png)
+<img src="http://dispatchrabbi.github.io/article-appstate/images/app-state-arrows.png">
 
 Here's [our application state object](http://github.com/dispatchrabbi/article-appstate/2-with-app-state/models/app-state/app-state.js):
 
