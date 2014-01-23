@@ -167,7 +167,7 @@ Now all we have left to do is instantiate the control in [our main JS file](http
 A note of caution
 ---
 Here’s the final architecture for the TPS report viewer:
-!(http://dispatchrabbi.github.io/article-appstate/images/app-state-undo-arrows.png)
+<img src="http://dispatchrabbi.github.io/article-appstate/images/app-state-undo-arrows.png">
 
 Because the application state connects most of the components in an application, it can be tempting to turn it into a miscellaneous bucket and using it to store things simply because more than one control wants access to them. The most common culprits here are shared data models or random pieces of data you want to store for later.
 
