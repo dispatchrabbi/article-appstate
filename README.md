@@ -5,17 +5,17 @@ One of the biggest challenges in a complex application is getting all the differ
 
 Why use application state?
 ---
-Imagine you’re building [this simple TPS report viewer](./1-first-pass/index.html):
-!(./images/app.png)
+Imagine you’re building [this simple TPS report viewer](http://dispatchrabbi.github.io/article-appstate/1-first-pass/index.html):
+!(http://dispatchrabbi.github.io/article-appstate/images/app.png)
 
 It displays TPS reports from… well, we don’t actually care where they’re from, but someone writes them, and here they are. TPS reports need to be searchable by name and filterable by the flags *A*, *B*, and *C*, so I’ve divided the application into a search bar component, a flag filter component, and a report list.
-!(./images/app-components.png)
+!(http://dispatchrabbi.github.io/article-appstate/images/app-components.png)
 
 In order for the report list to filter based on the search bar and the flag checkboxes, it has to know when they change. A first attempt at this might be to have the search bar and flag checkboxes update the report list whenever they change values:
-!(./images/app-components-arrows.png)
+!(http://dispatchrabbi.github.io/article-appstate/images/app-components-arrows.png)
 
 This would work okay for something this simple, but as soon as you add another component — say, an undo button — you have to add communication to every other component:
-!(./images/app-undo-components.png)
+!(http://dispatchrabbi.github.io/article-appstate/images/app-undo-components.png)
 
 For every component you add to your application, you have to add communication to every component you already have, and it can get ugly fast. (This is known as the [handshake problem](http://en.wikipedia.org/wiki/Handshake_problem).) There’s got to be a better way — and there is: **application state**.
 
@@ -28,9 +28,9 @@ Let’s look at how we can apply this idea to the application above.
 Adding application state to your app
 ---
 We need to create an object that facilitates communication between these three components, and the first step is to figure out what information needs to be shared. In this case, it’s pretty simple: the report list needs to know what criteria to filter by, and that information is supplied by the search box and the flag filters.
-!(./images/app-state-arrows.png)
+!(http://dispatchrabbi.github.io/article-appstate/images/app-state-arrows.png)
 
-Here's [our application state object](./2-with-app-state/models/app-state/app-state.js):
+Here's [our application state object](http://github.com/dispatchrabbi/article-appstate/2-with-app-state/models/app-state/app-state.js):
 
 ```js
 steal('can', function(can) {
@@ -49,7 +49,7 @@ You’ll note that the application state is a singleton. This is because the app
 
 When we go to modify the controls to listen to the application state, a hidden benefit of making it a singleton emerges: we don’t have to worry about passing the state into every control. Instead, we can just require the module and know that it is the same state that every other control is working with.
 
-We’ll hook up [the search control](./2-with-app-state/controls/search-filter/search-filter.js) to modify the application state on change:
+We’ll hook up [the search control](http://github.com/dispatchrabbi/article-appstate/2-with-app-state/controls/search-filter/search-filter.js) to modify the application state on change:
 
 ```js
 return can.Control.extend({
@@ -72,7 +72,7 @@ return can.Control.extend({
 });
 ```
 
-The [flag filters](./2-with-app-state/controls/flag-filter/flag-filter.js) can be similarly modified. After that, we’ll make the [report list](./2-with-app-state/controls/report-list/report-list.js) listen to changes in the application state:
+The [flag filters](http://github.com/dispatchrabbi/article-appstate/2-with-app-state/controls/flag-filter/flag-filter.js) can be similarly modified. After that, we’ll make the [report list](http://github.com/dispatchrabbi/article-appstate/2-with-app-state/controls/report-list/report-list.js) listen to changes in the application state:
 
 ```js
 return can.Control.extend({
@@ -117,7 +117,7 @@ Making state available
 ---
 Okay, with the idea and implementation of application state under our belts, let’s see how to unleash the application state’s superpower: making state easily available to the user so they can return to a specific state. You might implement save and restore functionality by any number of mechanisms — more on that later — but we’re going to take the easy way out and put the state right in the URL.
 
-CanJS has a routing system called [can.route](http://canjs.com/docs/can.route.html). It lets you manipulate the URL fragment using a special can.Map. Because both can.route and the application state are Maps, we can hook them up in such a way that they reflect each other. [Let’s give it a try.](./3-with-routing/models/app-state/app-state.js)
+CanJS has a routing system called [can.route](http://canjs.com/docs/can.route.html). It lets you manipulate the URL fragment using a special can.Map. Because both can.route and the application state are Maps, we can hook them up in such a way that they reflect each other. [Let’s give it a try.](http://github.com/dispatchrabbi/article-appstate/3-with-routing/models/app-state/app-state.js)
 
 ```js
 // Change the route when the app state changes.
@@ -141,7 +141,7 @@ Now, when you modify the application state, the URL will change, and vice versa.
 Doing something new
 This is very cool, but it’s time to take it to the next level. Let’s add a feature that makes web developers everywhere tremble: an *undo* button. I bet you we can do it in 15 lines of code (not counting boilerplate). Let’s rock.
 
-First, we create [the control for the undo button](./4-final/controls/undo-button/undo-button.js) (and [its associated template](./4-final/controls/undo-button/undo-button.mustache)). Here’s the part that saves and restores each state:
+First, we create [the control for the undo button](http://github.com/dispatchrabbi/article-appstate/4-final/controls/undo-button/undo-button.js) (and [its associated template](http://github.com/dispatchrabbi/article-appstate/4-final/controls/undo-button/undo-button.mustache)). Here’s the part that saves and restores each state:
 
 ```js
 // save the state when it changes
@@ -162,12 +162,12 @@ First, we create [the control for the undo button](./4-final/controls/undo-butto
 }
 ```
 
-Now all we have left to do is instantiate the control in [our main JS file](./4-final/index.js) and we have infinite undo in 12 lines of code! [Eat your heart out, St. Louis.](./4-final/index.html)
+Now all we have left to do is instantiate the control in [our main JS file](http://github.com/dispatchrabbi/article-appstate/4-final/index.js) and we have infinite undo in 12 lines of code! [Eat your heart out, St. Louis.](http://dispatchrabbi.github.io/article-appstate/4-final/index.html)
 
 A note of caution
 ---
 Here’s the final architecture for the TPS report viewer:
-!(./images/app-state-undo-arrows.png)
+!(http://dispatchrabbi.github.io/article-appstate/images/app-state-undo-arrows.png)
 
 Because the application state connects most of the components in an application, it can be tempting to turn it into a miscellaneous bucket and using it to store things simply because more than one control wants access to them. The most common culprits here are shared data models or random pieces of data you want to store for later.
 
