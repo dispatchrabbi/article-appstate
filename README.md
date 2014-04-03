@@ -1,7 +1,9 @@
 A better architecture for JavaScript apps
 ===
 
-One of the biggest challenges in a complex application is getting all the different parts of the app to talk to each other simply, cleanly, and reliably. The application state pattern is an architectural pattern that enables exactly this while keeping coupling to a minimum. In this article, I’ll go over what application state entails and why you’d want to use it, demonstrate adding application state to a simple application, and show off some cool tricks you can add to your app that you get for free when you follow this pattern.
+One of the biggest challenges in a complex application is getting all the different parts of the app to talk to each other simply, cleanly, and reliably. The application state pattern is an architectural pattern that enables exactly this while keeping coupling to a minimum.
+
+In this article, I’ll go over what application state entails and why you’d want to use it, demonstrate adding application state to a simple application, and show off some cool tricks you can add to your app that you get for free when you follow this pattern.
 
 Why use application state?
 ---
@@ -120,20 +122,34 @@ Okay, with the idea and implementation of application state under our belts, let
 CanJS has a routing system called [can.route](http://canjs.com/docs/can.route.html). It lets you manipulate the URL fragment using a special can.Map. Because both can.route and the application state are Maps, we can hook them up in such a way that they reflect each other. [Let’s give it a try.](http://github.com/dispatchrabbi/article-appstate/3-with-routing/models/app-state/app-state.js)
 
 ```js
-// Change the route when the app state changes.
-appState.bind('change', function(ev) {
-	var currentState = appState.attr();
-	can.route.attr({
-		searchTerm: currentState.searchTerm,
-		flags: currentState.flags.join('')
-	}, true);
+var AppState = can.Map.extend({
+	// return an object with string friendly formats
+	serialize: function(){
+		return {
+			searchTerm: this.attr('searchTerm'),
+			flags: this.attr('flags').join(',')
+		}
+	},
+	setFlags: function(val){
+		if(val === ""){
+			return [];
+		}
+		var arr = val;
+		if(typeof val === "string"){
+			arr = val.split(',')
+		}
+		return arr;
+	}
 });
 
-// Change the app state when the route changes.
-can.route.bind('change', function() {
-	appState.attr('searchTerm', can.route.attr('searchTerm') || '');
-	appState.attr('flags', can.route.attr('flags') ? can.route.attr('flags').split('') : []);
+var appState = new AppState;
+
+can.route("", {
+	searchTerm: '',
+	flags: ''
 });
+
+can.route.data = appState;
 ```
 
 Now, when you modify the application state, the URL will change, and vice versa. That means that you can change the filter settings and bookmark the URL, and when you come back, the application will load into the same state you left it in.
