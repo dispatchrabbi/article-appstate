@@ -11,6 +11,7 @@ function(can) {
 				flags: this.attr('flags').join(',')
 			}
 		},
+		// convert a stringified object into the javascript friendly format
 		setFlags: function(val){
 			if(val === ""){
 				return [];
