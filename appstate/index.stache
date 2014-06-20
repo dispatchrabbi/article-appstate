@@ -1,5 +1,5 @@
 <aside id="filters">
 	<search-filter searchTerm='{searchTerm}'></search-filter>
-	<flag-filter></flag-filter>
+	<flag-filter flags='{flags}'></flag-filter>
 </aside>
 <report-list reports='{reports}'></report-list>

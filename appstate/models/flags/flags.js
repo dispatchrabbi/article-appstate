@@ -3,10 +3,8 @@
 	var fn = function(){
 
 		return can.Model.extend({
-			findAll: 'GET /reports'
-		}, {
-			selected: false
-		});
+			findAll: 'GET /flags'
+		}, {});
 	};
 
 	var dependencies = ['can/model'];

@@ -20,8 +20,13 @@ steal('can/util/fixture', function(){
 	];
 	
 	can.fixture('GET /reports', function(req){
+		var flags = [];
+		if(req.data.flags !== ""){
+			flags = req.data.flags.split(",");
+		}
 		return _.filter(reports, function(report){
-			return report.name.indexOf(req.data.searchTerm) === 0;
+			return (report.name.indexOf(req.data.searchTerm) === 0 && 
+				(flags.length? _.intersection(flags, report.flags).length: true));
 		})
 	})
 })

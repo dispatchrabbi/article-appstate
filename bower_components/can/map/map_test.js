@@ -268,4 +268,12 @@ steal("can/map", "can/compute", "can/test", "can/list", function(){
 
 		data.attr('name', 'David');
 	});
+
+	test("no events fired when properties don't change", function(){
+		var m = new can.Map({name: ""});
+		m.bind('name', function(){
+			console.log('name changed');
+		})
+		m.attr({'name': ""});
+	})
 });

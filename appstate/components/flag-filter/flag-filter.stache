@@ -1,0 +1,6 @@
+{{#flags}}
+<div class="flag">
+	<input type="checkbox" can-value='{selected}'>
+	<span class="name">{{name}}</span>
+</div>
+{{/flags}}

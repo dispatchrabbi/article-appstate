@@ -1,7 +1,9 @@
 <ul>
 	{{#each reports}}
 	<li class="report">
-		<div class="name">{{name}}</div>
+		<input type='checkbox' can-value="{selected}" />
+		<span class="name">{{name}}</span>
+		<div class="flags">{{formatFlags .}}</div>
 	</li>
 	{{/each}}
 </ul>

@@ -8,6 +8,10 @@ steal(
 function(can, AppState, appTemplate) {
 	$(document).ready(function(){
 		window.appState = new AppState();
+		appState.bind('searchTerm', function(){
+debugger;
+			console.log("changed search")
+		})
 		can.route.map(appState);
 		can.route.ready();
 		$("#app").html(appTemplate(appState));
