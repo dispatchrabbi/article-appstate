@@ -2,14 +2,21 @@
 @download can/component
 @test can/component/test.html
 @parent canjs
+@release 2.0
+@link ../docco/component/component.html docco
+
 
 @description Create widgets that use a template, a view-model 
 and custom tags.
 
-@signature `< TAG [ATTR-NAME=ATTR-VALUE] >`
+@deprecated {2.1} To pass data from the scope, you must wrap your attribute 
+value with `{}`. In 3.0, [can.mustache]
+will use [can.stache]'s method.
+
+@signature `< TAG [ATTR-NAME=KEY|ATTR-VALUE] >`
 
 Create an instance of a component on a particular 
-tag. Currently, this only works within [can.Mustache] templates.
+tag in a [can.mustache] template.
 
 @param {String} TAG An HTML tag name that matches the [can.Component::tag tag]
 property of the component.
@@ -18,13 +25,45 @@ property of the component.
 valid. Any attributes added to the element are added as properties to the
 component's [can.Component::scope scope].
 
-@param {String} ATTR-VALUE Specifies the value of a property passed to
+@param {can.mustache.key} [ATTR-VALUE] Specifies the value of a property passed to
 the component instance's [can.Component::scope scope]. By default `ATTR-VALUE`
-values are looked up in the [can.view.Scope can.Mustache scope]. If the string value
+values are looked up in the [can.view.Scope can.mustache scope]. If the string value
 of the `ATTR-NAME` is desired, this can be specified like: 
 
     ATTR-NAME: "@"
-    
+
+@param {can.mustache.key} [KEY] Specifies the value of a property passed to
+the component instance's [can.Component::scope scope] that will be looked
+up in the [can.view.Scope can.stache scope]. 
+
+@signature `< TAG [ATTR-NAME="{KEY}|ATTR-VALUE"] >`
+
+Create an instance of a component on a particular 
+tag in a [can.stache] template.
+
+@release 2.1
+
+@param {String} TAG An HTML tag name that matches the [can.Component::tag tag]
+property of the component.
+
+@param {String} ATTR-NAME An HTML attribute name. Any attribute name is
+valid. Any attributes added to the element are added as properties to the
+component's [can.Component::scope scope]. In the DOM, attribute names
+are case insensitive.  To pass a camelCase attribute to the component's scope,
+hypenate the attribute name like:
+
+    <tag attr-name="{key}"></tag>
+
+This will set `attrName` on the component's scope.
+
+@param {can.stache.key} [KEY] Specifies the value of a property passed to
+the component instance's [can.Component::scope scope] that will be looked
+up in the [can.view.Scope can.stache scope]. 
+
+@param {can.stache.key} [ATTR-VALUE] If the attribute value is not
+wrapped with `{}`, the string value of the attribute will be
+set on the component's scope.
+
 @body
 
 ## Use
@@ -51,7 +90,7 @@ says "Hello There!".  To create a a instance of this component on the page,
 add `<hello-world></hello-world>` to a mustache template, render
 the template and insert the result in the page like:
 
-    var template = can.view.mustache("<hello-world></hello-world>");
+    var template = can.mustache("<hello-world></hello-world>");
     $(document.body).append( template() );
 
 Check this out here:
@@ -137,9 +176,9 @@ The following component:
 
 Changes the following rendered template:
 
-    var template = can.view.mustache("<hello-world message='gretting'/>");
+    var template = can.mustache("<hello-world message='greeting'/>");
     template({
-      message: "Salutations"
+      greeting: "Salutations"
     })
 
 Into:
@@ -158,7 +197,7 @@ Default values can be provided. The following component:
 
 Changes the following rendered template:
 
-    var template = can.view.mustache("<hello-world message='gretting'/>");
+    var template = can.mustache("<hello-world message='greeting'/>");
     template({})
 
 Into:
@@ -178,7 +217,7 @@ default value of "@".  The following component:
 
 Changes the following rendered template:
 
-    var template = can.view.mustache("<hello-world message='Howdy'/>");
+    var template = can.mustache("<hello-world message='Howdy'/>");
     template({})
 
 Into:
@@ -204,7 +243,7 @@ adds "!" to the message every time `<hello-world>` is clicked:
 
 ### Helpers
 
-A component's [can.Component::helpers helpers] object provides [can.Mustache.helper mustache helper] functions
+A component's [can.Component::helpers helpers] object provides [can.mustache.helper mustache helper] functions
 that are available within the component's template.  The following component
 only renders friendly messages:
 
@@ -224,10 +263,46 @@ only renders friendly messages:
       }
     });
 
+## Differences between components in can.mustache and can.stache
+
+A [can.mustache] template passes values from the scope to a [can.Component]
+by specifying the key of the value in the attribute directly.  For example:
+
+    can.Component.extend({
+      tag: "my-tag",
+      template: "<h1>{{greeting}}</h1>"
+    });
+    var template = can.mustache("<my-tag greeting='message'></my-tag>");
+    
+    var frag = template({
+      message: "Hi"
+    });
+    
+    frag //-> <my-tag greeting='message'><h1>Hi</h1></my-tag>
+   
+With [can.stache], you wrap the key with `{}`. For example:
+
+    can.Component.extend({
+      tag: "my-tag",
+      template: "<h1>{{greeting}}</h1>"
+    });
+    var template = can.stache("<my-tag greeting='{message}'></my-tag>");
+    
+    var frag = template({
+      message: "Hi"
+    });
+   
+    frag //-> <my-tag greeting='{message}'><h1>Hi</h1></my-tag>
+
+If the key was not wrapped, the template would render:
+
+    frag //-> <my-tag greeting='message'><h1>message</h1></my-tag>
+ 
+Because the attribute value would be passed as the value of `gretting`.
 
 ## Examples
 
-Checkout the following examples built with can.Component.
+Check out the following examples built with can.Component.
 
 ### Tabs
 
@@ -253,7 +328,7 @@ To add another panel, all we have to do is add data to foodTypes like:
     })
 
 The secret is that the `<panel>` element listens to when it is inserted
-and adds its data to the tabs's list of panels with:
+and adds its data to the tabs' list of panels with:
 
     this.element.parent().scope().addPanel( this.scope );    
 
@@ -263,8 +338,8 @@ The following tree combo lets people walk through a hierarchy and select locatio
 
 @demo can/component/examples/treecombo.html
 
-The secret to this widget is the scope's `breadcrumb` property that is an array
-of items we've walked through and `selectableItems` which gets the children of the
+The secret to this widget is the scope's `breadcrumb` property, which is an array
+of items the user has navigated through, and `selectableItems`, which represents the children of the
 last item in the breadcrub.  These are defined on the scope like:
 
 
@@ -284,7 +359,7 @@ last item in the breadcrub.  These are defined on the scope like:
       }
     }
 
-When the show children button is clicked, the scope's `showChildren` method is called which
+When the "+" icon is clicked next to each item, the scope's `showChildren` method is called, which
 adds that item to the breadcrumb like:
 
     showChildren: function( item, el, ev ) {
@@ -295,7 +370,7 @@ adds that item to the breadcrumb like:
 ### Paginate
 
 The following example shows 3 
-widget like components: a grid, next / prev buttons, and a page count indicator. And,
+widget-like components: a grid, next / prev buttons, and a page count indicator. And,
 it shows an application component that puts them all together.
 
 @demo can/component/examples/paginate.html
@@ -306,7 +381,7 @@ This demo uses a `Paginate` can.Map to assist with maintaining a paginated state
     ...
     });
     
-The `app` component crates an instance of the `Paginate` model
+The `app` component creates an instance of the `Paginate` model
 and a `websitesDeferred` that represents a request for the Websites
 that should be displayed.
 
@@ -332,7 +407,7 @@ that should be displayed.
       }
     }
 
-The `app` control passes paginate, paginate's values, or websitesDeferreds to
+The `app` control passes paginate, paginate's values, and websitesDeferreds to
 its sub-components:
 
     <grid deferredData='websitesDeferred'>
@@ -345,3 +420,11 @@ its sub-components:
     </grid>
     <next-prev paginate='paginate'/>
     <page-count page='paginate.page' count='paginate.pageCount'/>
+
+## IE 8 Support
+
+While CanJS does support Internet Explorer 8 out of the box, if you decide
+to use can.Component then you will need to include [HTML5 Shiv](https://github.com/aFarkas/html5shiv)
+in order for your custom tags to work properly.
+
+For namespaced tag names (e.g. `<can:example>`) and hyphenated tag names (e.g. `<can-example>`) to work properly, you will need to use version 3.7.2 or later.

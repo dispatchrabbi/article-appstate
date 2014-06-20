@@ -14,7 +14,7 @@
     "bower_components"
   ],
   "dependencies": {
-    "can": "git://github.com/bitovi/canjs.git#v2.0.3",
+    "can": "git://github.com/bitovi/canjs.git#master",
     "steal": "git://github.com/bitovi/steal.git#c735373a007652d1e12d6e49e183834e4b29a910",
     "lodash": "v2.4.1"
   }

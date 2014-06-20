@@ -26,8 +26,10 @@
             less: 'steal/less/less.js',
             coffee: 'steal/coffee/coffee.js',
             ejs: 'can/view/ejs/ejs.js',
+            stache: 'can/view/stache/stache.js',
             mustache: 'can/view/mustache/mustache.js'
-        }
+        },
+        fixtures: true
     });
 
 })();

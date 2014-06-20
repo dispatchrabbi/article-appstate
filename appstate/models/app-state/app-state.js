@@ -1,38 +1,38 @@
 steal(
 'can',
-'can/map/setter',
-function(can) {
+'appstate/models/reports',
+'can/map/define',
+function(can, Reports) {
 
 	var AppState = can.Map.extend({
-		// return an object with string friendly formats
-		serialize: function(){
-			return {
-				searchTerm: this.attr('searchTerm'),
-				flags: this.attr('flags').join(',')
+		define: {
+			// A list of the reports currently being shown in the page.
+			// The reports will refresh when a filter changes or search 
+			// term is added.
+			reports: {
+				get: function(){
+					return new Reports.List({
+						searchTerm: this.attr('searchTerm')
+					})
+				},
+				serialize: false
+			},
+			// A "virtual" property with the ids of selected reports.
+			// Used to represent the reports in the serialized route.
+			// Example: "4,6,23"
+			reportIds: {
+				serialize: function(){
+
+				}
+			},
+			// A term the user is searching for
+			searchTerm: {
+				value: "",
+				type: "string"
 			}
-		},
-		// convert a stringified object into the javascript friendly format
-		setFlags: function(val){
-			if(val === ""){
-				return [];
-			}
-			var arr = val;
-			if(typeof val === "string"){
-				arr = val.split(',')
-			}
-			return arr;
 		}
 	});
 
-	var appState = new AppState;
-
-    can.route("", {
-		searchTerm: '',
-		flags: ''
-    });
-
-    can.route.data = appState;
-
-	return appState;
+	return AppState;
 
 });
